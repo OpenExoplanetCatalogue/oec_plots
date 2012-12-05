@@ -14,7 +14,8 @@ Contributions are welcome!
 
 Example Plots
 --------------
-![Mass vs semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_mass_vs_semimajoraxis_discovery.svg "Plot")
+![Mass vs semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_mass_vs_semimajoraxis_discovery.svg.png "Plot")
+![Mass vs semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_mass_vs_semimajoraxis_eccentricity.svg.png "Plot")
 
 
 
