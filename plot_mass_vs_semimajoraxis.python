@@ -1,0 +1,37 @@
+#!/usr/bin/python
+import xml.etree.ElementTree as ET
+import subprocess, glob
+
+# Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
+gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+gnuplot.stdin.write("""
+set terminal svg
+set output "plot_mass_vs_semimajoraxis.svg"
+set xlabel "Semi-major axis [AU]"
+set ylabel "Planet mass [MJupiter]"
+set cblabel "Eccentricity"
+set logscale xy
+set xrange [0.001:100]
+set yrange [0.008:25]
+set label "Data taken from the Open Exoplanet Catalogue." at screen 0.43,0.15 font ",8"
+plot "-" with point pt 7 lc palette notit
+""")
+for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+	system = ET.parse(open(filename, 'r'))
+	planets = system.findall(".//planet")
+	for planet in planets:
+		try:
+			mass = float(planet.findtext("./mass"))
+			semimajoraxis = float(planet.findtext("./semimajoraxis"))
+			try:
+				eccentricity = float(planet.findtext("./eccentricity"))
+			except:
+				eccentricity = 0.
+			gnuplot.stdin.write("%e\t%e\t%e\n"%(mass, semimajoraxis, eccentricity))
+		except:
+			# Mass or semimajoraxis not specified for this planet.
+			# One could do a more complicated check here and see if the period and the mass of the host star is given. 
+			pass
+
+
+gnuplot.stdin.write("\ne\n")
