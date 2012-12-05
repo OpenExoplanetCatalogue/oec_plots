@@ -1,0 +1,51 @@
+#!/usr/bin/python
+import xml.etree.ElementTree as ET
+import subprocess, glob, os
+
+# Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
+gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+gnuplot.stdin.write("""
+set terminal svg
+set output "plot_mass_histogram.svg"
+set ylabel "Number of planets"
+set ylabel "Planet mass [MJupiter]"
+set y2label "Planet mass [MEarth]"
+set label "Data taken from the Open Exoplanet Catalogue." at screen 0.55,0.15 font ",8"
+set xrange [0:15]
+set style histogram rowstacked
+
+binwidth=0.2
+set boxwidth binwidth
+bin(x,width)=width*floor(x/width) + binwidth/2.0
+
+plot \
+"-" using (bin($1,binwidth)):(1.0) smooth freq with boxes lc 2 t "Radial velocity planets", \
+"-" using (bin($1,binwidth)):(1.0) smooth freq with boxes lc 3 t "Transiting planets",  \
+"-" using (bin($1,binwidth)):(1.0) smooth freq with boxes lc 1 t "Directly imaged planets", \
+"-" using (bin($1,binwidth)):(1.0) smooth freq with boxes lc 4 t "Microlensing planets"
+""")
+
+def plotPlanetWithDiscoveryMethod(_discoverymethod):
+	for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+		system = ET.parse(open(filename, 'r'))
+		planets = system.findall(".//planet")
+		for planet in planets:
+			try:
+				mass = float(planet.findtext("./mass"))
+				discoverymethod = planet.findtext("./discoverymethod")
+				if discoverymethod==_discoverymethod:
+					gnuplot.stdin.write("%e\n"%(mass))
+			except:
+				# Most likely cause for an exception: Mass or semi-major axis not specified for this planet.
+				# One could do a more complicated check here and see if the period and the mass of the host star is given and then calculate the semi-major axis 
+				pass
+	gnuplot.stdin.write("\ne\n")
+
+plotPlanetWithDiscoveryMethod("RV")
+plotPlanetWithDiscoveryMethod("transit")
+plotPlanetWithDiscoveryMethod("imaging")
+plotPlanetWithDiscoveryMethod("microlensing")
+
+gnuplot.stdin.close()
+# Generate a png review. This only works on a mac.
+os.system("qlmanage -t -s 500 -o . plot_mass_histogram.svg")
