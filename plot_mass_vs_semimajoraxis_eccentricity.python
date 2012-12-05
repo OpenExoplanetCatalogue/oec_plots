@@ -39,3 +39,4 @@ gnuplot.stdin.write("\ne\n")
 gnuplot.stdin.close()
 # Generate a png review. This only works on a mac.
 os.system("qlmanage -t -s 500 -o . plot_mass_vs_semimajoraxis_eccentricity.svg")
+os.system("convert plot_mass_vs_semimajoraxis_eccentricity.svg.png -crop 500x400+0+0 plot_mass_vs_semimajoraxis_eccentricity.svg.png")
