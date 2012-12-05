@@ -6,10 +6,15 @@ Open Exoplanet Catalogue
 [The Open Exoplanet Catalogue](https://github.com/hannorein/open_exoplanet_catalogue) is a database of all discovered extra-solar planets.
 
 
-Plots
+Open Exoplanet Cataligue Plots
 --------------
 This git repository contains sample scripts and plots that make use of the Open Exoplanet Catalogue. 
 Contributions are welcome!
+
+
+Example Plots
+--------------
+![Mass vs semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_mass_vs_semimajoraxis_discovery.svg "Plot")
 
 
 
