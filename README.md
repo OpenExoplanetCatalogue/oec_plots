@@ -11,6 +11,14 @@ Open Exoplanet Cataligue Plots
 This git repository contains sample scripts and plots that make use of the Open Exoplanet Catalogue. 
 Contributions are welcome!
 
+To clone the repository and clone the Open Exoplanet Catalogye submodule following these steps
+
+    git clone git@github.com:hannorein/oec_plots.git
+    cd oec_plots
+    git submodule init
+    git submodule update
+
+
 
 Example Plots
 --------------
