@@ -1,0 +1,150 @@
+#!/usr/bin/python
+import xml.etree.ElementTree as ET
+import subprocess, glob, os,math
+
+# Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
+gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+gnuplot.stdin.write("""
+set terminal svg size 800,3000 
+set output "plot_stypebinary.svg" 
+set bmargin 1
+set xtics in
+set xtics nomirror
+set tmargin 1
+unset ytics
+set yrange [-0.5:3]
+""")
+
+data = []
+y= 0
+
+class hostobject:
+	def __init__(self):
+		self.childs = []
+		self.planets = []
+		self.semimajoraxis = 0
+		self.tree = None
+		self.tag = None
+		self.mass = 0
+		self.name = None
+		self.objecttype = 0
+
+	def setup(self,xmlobject):
+		self.tree = xmlobject
+		self.tag = xmlobject.tag
+		_childs  = xmlobject.findall("./star") + xmlobject.findall("./binary") + xmlobject.findall("./planet") 
+		for child in _childs:
+			ho = hostobject()
+			ho.setup(child)
+			self.childs.append(ho)
+			self.mass += ho.mass
+
+		if xmlobject.tag == "binary":
+			try:
+				_semimajoraxis = float(xmlobject.findtext("./semimajoraxis"))	
+			except:
+				period = float(xmlobject.findtext("./period"))	
+				_semimajoraxis = math.pow(period/365.25,2./3.)
+				pass
+			childindex = 0
+			for child in self.childs:
+				if child.tag=="binary" or child.tag=="star":
+					if childindex == 0:
+						child.semimajoraxis = - _semimajoraxis*(1.-child.mass/self.mass)
+					else:
+						child.semimajoraxis = _semimajoraxis*(1.-child.mass/self.mass)
+					childindex += 1
+					
+	
+		if xmlobject.tag == "star":
+			try:
+				self.mass += float(xmlobject.findtext("./mass"))
+			except: 
+				pass
+		if xmlobject.tag == "planet":
+			try:
+				self.semimajoraxis = float(xmlobject.findtext("./semimajoraxis"))	
+			except:
+				pass
+
+	def findminx(self,offset,minx):
+		x = self.semimajoraxis + offset
+		for child in self.childs:
+			minx = child.findminx(x,minx)
+		if minx>x:
+			return x
+		else:
+			return minx
+
+	def printstars(self,offset):
+		global y
+		if self.tag=="star":
+			gnuplot.stdin.write("%f\t%e\n" %(y, self.semimajoraxis + offset))
+		y+=1
+		for child in self.childs:
+			child.printstars(self.semimajoraxis + offset)
+		y-=1
+	
+	def printplanets(self,offset):
+		global y
+		if self.tag=="planet":
+			gnuplot.stdin.write("%f\t%e\n" %(y+0.009, self.semimajoraxis + offset))
+		y+=1
+		for child in self.childs:
+			child.printplanets(self.semimajoraxis + offset)
+		y-=1
+
+	def printlines(self,offset):
+		global y
+		x = self.semimajoraxis + offset
+		y+=1
+		for child in self.childs:
+			xchild = child.printlines(x)
+			gnuplot.stdin.write("%d\t%e\n" %(y-1, x))
+			gnuplot.stdin.write("%d\t%e\n" %(y-1, xchild))
+			gnuplot.stdin.write("%d\t%e\n" %(y, xchild))
+			gnuplot.stdin.write("\n")
+		y-=1
+		return self.semimajoraxis + offset
+
+
+
+
+		
+# parse
+hostobjects = []
+for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+	system = ET.parse(open(filename, 'r'))
+	binaries = system.findall(".//binary")
+	if len(binaries)>0:
+		ho = hostobject()
+		ho.setup(system.find("./binary"))
+		ho.name = system.findtext("./name")
+		hostobjects.append(ho)
+
+gnuplot.stdin.write("set multiplot layout %d,1\n"%(len(hostobjects)))
+
+# print
+for ho in hostobjects:
+	gnuplot.stdin.write("unset label\nset label \"%s\"\n" % ho.name)
+	gnuplot.stdin.write("""
+	plot \
+	"-" u 2:1 with lines lt 1 lc rgb "gray" notitle, \
+	"-" u 2:1 with point pt 7 ps 1. lt 1 lc rgb "yellow" notitle, \
+	"-" u 2:1 with point pt 7 ps 0.5 lt 4 lc rgb "black" notitle
+	""")
+	y = 0
+	ho.printlines(0.0)
+	gnuplot.stdin.write("\ne\n")
+	y = 0
+	ho.printstars(0.0)
+	gnuplot.stdin.write("\ne\n")
+	y = 0
+	ho.printplanets(0.0)
+	gnuplot.stdin.write("\ne\n")
+
+
+gnuplot.stdin.close()
+# Generate a png review. This only works on a mac.
+os.system("qlmanage -t -s 500 -o . plot_stypebinary.svg")
+os.system("convert plot_stypebinary.svg.png -crop 500x400+0+0 plot_stypebinary.svg.png")
