@@ -1,0 +1,87 @@
+#!/usr/bin/python
+import xml.etree.ElementTree as ET
+import subprocess, glob, os,math,datetime
+
+# Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
+gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+gnuplot.stdin.write("""
+set terminal svg 
+set output "plot_discoveryyear.svg" 
+set xlabel "Discovery year"
+set autoscale xfix 
+set ylabel "Number of new planets"
+set style fill solid 0.7
+set key top left
+
+set label "Data taken from the Open Exoplanet Catalogue." at screen 0.57,0.15 font ",8" front
+set style data histograms 
+set style histogram rowstacked
+
+
+plot \
+"-" using 2:xtic(1) title "Radial velocity planets" ,\
+"" using 3 title "Transiting planets" ,\
+"" using 4 title "Imaged planets" ,\
+"" using 5 title "Planets detected by timing" ,\
+"" using 6 lt 6 title "All others detection methods"
+""")
+
+
+def plotPlanetsDiscoveredBy(_discoverymethod=None):
+	data = {}
+	for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+		system = ET.parse(open(filename, 'r'))
+		planets = system.findall(".//planet")
+		for planet in planets:
+			try:
+				discoverymethod = planet.findtext("./discoverymethod")
+				discoveryyear = int(planet.findtext("./discoveryyear"))
+				if _discoverymethod==None: #plot all others
+					if discoverymethod!="RV" and discoverymethod!="transit" and discoverymethod!="imaging" and discoverymethod!="timing":
+						try:
+							data[discoveryyear] += 1
+						except:
+							data[discoveryyear] = 1
+				else:
+					if discoverymethod==_discoverymethod:
+						try:
+							data[discoveryyear] += 1
+						except:
+							data[discoveryyear] = 1
+			except:
+				pass
+	return data
+
+methods = []
+methods.append(plotPlanetsDiscoveredBy("RV"))
+methods.append(plotPlanetsDiscoveredBy("transit"))
+methods.append(plotPlanetsDiscoveredBy("imaging"))
+methods.append(plotPlanetsDiscoveredBy("timing"))
+methods.append(plotPlanetsDiscoveredBy())
+
+def printToGnuplot():
+	for year in range(1990,datetime.date.today().year+1):
+		if year%5==0:  #only print some labels
+			gnuplot.stdin.write("%d\t"%(year))
+		else:
+			gnuplot.stdin.write("\"\"\t")
+		for method in methods:
+			try:
+				gnuplot.stdin.write("%d\t"% (int(method[year])))
+			except:
+				gnuplot.stdin.write("%d\t"% 0)
+		gnuplot.stdin.write("\n")
+	gnuplot.stdin.write("\ne\n")
+
+# output needs to be repeated 5 times because we are using a pipe and not a file.
+printToGnuplot()
+printToGnuplot()
+printToGnuplot()
+printToGnuplot()
+printToGnuplot()
+
+
+gnuplot.stdin.close()
+# Generate a png review. This only works on a mac. Use another terminal on linux or use the convert command to convert from svg to png.
+os.system("qlmanage -t -s 500 -o . plot_discoveryyear.svg")
+os.system("convert plot_discoveryyear.svg.png -crop 500x400+0+0 plot_discoveryyear.svg.png")
