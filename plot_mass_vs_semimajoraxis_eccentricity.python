@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import xml.etree.ElementTree as ET
-import subprocess, glob, os
+import subprocess, glob, os, datetime
 
 # Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
 gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -13,7 +13,7 @@ set cblabel "Eccentricity"
 set logscale xy
 set xrange [0.001:80]
 set yrange [0.008:25]
-set label "Data taken from the Open Exoplanet Catalogue." at screen 0.43,0.15 font ",8"
+set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.19,0.15 front font ",8"
 plot "-" with point pt 7 lc palette notit
 """)
 for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
