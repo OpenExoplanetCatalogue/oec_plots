@@ -109,8 +109,4 @@ for ratio in sorteddata:
 	gnuplot.stdin.write("%e\t%e\n"%(ratio[0],1.))
 
 gnuplot.stdin.write("\ne\n")
-
 gnuplot.stdin.close()
-# Generate a png review. This only works on a mac.
-os.system("qlmanage -t -s 500 -o . plot_periodratio.svg")
-os.system("convert plot_periodratio.svg.png -crop 500x400+0+0 plot_periodratio.svg.png")
