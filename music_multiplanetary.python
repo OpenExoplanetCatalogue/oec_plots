@@ -1,0 +1,86 @@
+#!/usr/bin/python
+# This script needs the midiutil library
+# https://code.google.com/p/midiutil/
+import xml.etree.ElementTree as ET
+import subprocess, glob, os,math
+from midiutil.MidiFile import MIDIFile
+
+MyMIDI = MIDIFile(1)
+
+# Add track name and tempo. The first argument to addTrackName and
+# addTempo is the time to write the event.
+track = 0
+time = 0
+MyMIDI.addTrackName(0,time,"Exoplanet Track")
+MyMIDI.addTempo(track,time, 120)
+
+# Add a note. addNote expects the following information:
+channel = 1
+duration = 1
+volume = 100
+
+# Now add the note.
+alltones = []
+for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+	system = ET.parse(open(filename, 'r'))
+	planets = system.findall(".//planet")
+	name = system.findtext("./name")
+	if len(planets)>1:
+		tones = []
+		for planet in planets:
+			try:
+				period = float(planet.findtext("./period"))
+				mass = float(planet.findtext("./mass"))
+				semimajoraxis = float(planet.findtext("./semimajoraxis"))
+				frequency = 100000./period
+				pitch =  int(12.*math.log(frequency/440.,2.) + 69.)
+				pointsize = (math.log(mass)+7.)/2.
+				if pitch>0 and pitch <128:
+					tones.append([pitch,name,pointsize,semimajoraxis])
+			except:
+				pass
+
+		if len(tones)>1:
+			tones.sort()
+			alltones.append(tones)
+
+alltones.sort()
+
+for tones in alltones:
+	name = tones[0][1]
+	gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+	gnuplot.stdin.write("set output \"out/%05d.svg\"\n"%time)
+	gnuplot.stdin.write("set label \"%s\" at screen 0.45,0.6 left font \",30\"\n"%name)
+	gnuplot.stdin.write("""
+	set terminal svg size 1280,1280
+	set xlabel "Semi-major axis [AU]"
+	set yrange [-1:1]
+	set xrange [0.003:100]
+	unset ytics
+	set logscale x
+	set multiplot
+	set size 1,0.5625
+	set origin 0,0.4375
+	set label "Data taken from the Open Exoplanet Catalogue." at screen 0.77,0.5 font ",8"
+	plot \
+	"-" with point pt 7 ps variable notitle 
+	""")
+
+	for tone in tones:
+		MyMIDI.addNote(track,channel,tone[0],time,duration,volume)
+		gnuplot.stdin.write("%e\t%e\t%e\n"%(tone[3], 0, tone[2]))
+
+	gnuplot.stdin.write("\ne\n")
+	gnuplot.stdin.close()
+	os.system("qlmanage -t -s 1280 -o . out/%05d.svg"%time)
+	os.system("convert %05d.svg.png -crop 1280x720+0+0 out/%05d.png"%(time,time))
+	os.system("rm %05d.svg.png"%time)
+	
+	time += 1
+	print "system %d   %s"%(time,name)
+
+# And write it to disk.
+binfile = open("output.mid", 'wb')
+MyMIDI.writeFile(binfile)
+binfile.close()
+
