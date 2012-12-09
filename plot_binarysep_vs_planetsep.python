@@ -1,0 +1,59 @@
+#!/usr/bin/python
+import xml.etree.ElementTree as ET
+import subprocess, glob, os, datetime
+
+# Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
+gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+gnuplot.stdin.write("""
+set terminal svg
+set output "plot_binarysep_vs_planetsep.svg"
+set xlabel "Binary separation [AU]"
+set ylabel "Planet semi-major axis [AU]"
+set logscale xy
+set xrange [:20000]
+set key at screen 0.4,0.27
+set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.15 front font ",8"
+plot \
+"-" with point pt 7 lc 2 t "S-type orbits", \
+"-" with point pt 7 lc 1 t "P-type orbits"
+""")
+
+for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+	system = ET.parse(open(filename, 'r'))
+	planets = system.findall(".//binary/star/planet")
+	binaries = system.findall(".//binary")
+	if len(planets)>0:
+		for planet in planets:
+			planethost = None
+			for binary in binaries:
+				for star in binary:
+					for _planet in star:
+						if _planet == planet:
+							planethost = binary
+			try:
+				binarysep = float(planethost.findtext("./semimajoraxis"))
+				semimajoraxis = float(planet.findtext("./semimajoraxis"))
+				gnuplot.stdin.write("%e\t%e\n"%(binarysep, semimajoraxis))
+			except:
+				pass
+gnuplot.stdin.write("\ne\n")
+
+for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
+	system = ET.parse(open(filename, 'r'))
+	planets = system.findall(".//binary/planet")
+	binaries = system.findall(".//binary")
+	if len(planets)>0:
+		for planet in planets:
+			planethost = None
+			for binary in binaries:
+				if planet in binary:
+					planethost = binary
+			try:
+				binarysep = float(planethost.findtext("./semimajoraxis"))
+				semimajoraxis = float(planet.findtext("./semimajoraxis"))
+				gnuplot.stdin.write("%e\t%e\n"%(binarysep, semimajoraxis))
+			except:
+				pass
+gnuplot.stdin.write("\ne\n")
+
+gnuplot.stdin.close()

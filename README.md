@@ -27,6 +27,7 @@ Example Plots
 ![Period ratios](https://raw.github.com/hannorein/oec_plots/master/plot_periodratio.svg.png "Plot")
 ![Discovery year](https://raw.github.com/hannorein/oec_plots/master/plot_discoveryyear.svg.png "Plot")
 ![Mass vs semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_mass_vs_semimajoraxis_eccentricity.svg.png "Plot")
+![Binary separation vs planet semi-major axis](https://raw.github.com/hannorein/oec_plots/master/plot_binarysep_vs_planetsep.svg.png "Plot")
 
 
 
