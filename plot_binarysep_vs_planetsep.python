@@ -11,11 +11,13 @@ set xlabel "Binary separation [AU]"
 set ylabel "Planet semi-major axis [AU]"
 set logscale xy
 set xrange [:20000]
+set yrange [0.01:10]
 set key at screen 0.4,0.27
 set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.15 front font ",8"
 plot \
 "-" with point pt 7 lc 2 t "S-type orbits", \
-"-" with point pt 7 lc 1 t "P-type orbits"
+"-" with point pt 7 lc 1 t "P-type orbits", \
+x w line lt 1 lc rgb "gray" notit
 """)
 
 for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
