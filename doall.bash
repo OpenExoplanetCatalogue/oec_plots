@@ -8,3 +8,4 @@ python plot_mass_vs_semimajoraxis_eccentricity.python
 python plot_periodratio.python
 python plot_architecture.python
 python plot_binarysep_vs_planetsep.python
+python plot_discoveryyear.python
