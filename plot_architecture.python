@@ -5,17 +5,19 @@ import subprocess, glob, os, math, datetime
 # Open pipe gnuplot. You may want to change the terminal from svg to pdf for publication quality plots.
 gnuplot = subprocess.Popen(['gnuplot',"-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 gnuplot.stdin.write("""
-set terminal svg 
+set terminal svg size 600,2048 
 set output "plot_architecture.svg" 
 set xlabel "Semi-major axis [AU]"
-set yrange [-1:45]
+set autoscale fix
+set yrange [-1:*]
 set xrange [0.003:10]
-unset ytics
+set format y ""
+set ytics 1
 set title "Architecture of multiplanetary systems"
 set logscale x
-set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.15 front font ",8"
+set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.034 front font ",8"
 plot \
-"-" with labels right offset -1,0 font ",6" notit, \
+"-" with labels right offset -1,0 font ",8" notit, \
 "-" with point pt 7 ps variable notitle 
 """)
 
@@ -45,8 +47,7 @@ def compare(x, y):
 	if x<y: return -1
 	return 0
 	
-# only plot first 30 systems				
-sorteddata = sorted(data, cmp=compare)[0:45]
+sorteddata = sorted(data, cmp=compare)
 
 # Labels
 y=0
