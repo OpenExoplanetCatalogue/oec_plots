@@ -27,7 +27,7 @@ for file in *.svg
 do
 	echo "$file"
 	qlmanage -t -s 500 -o . "$file"
-	convert "$file.png" -crop 500x400+0+0 "$file.png"
+	convert "$file.png" -crop 1706x400+0+0 "$file.png"
 done	
 
 commit "automatic update: plots"
