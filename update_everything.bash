@@ -26,8 +26,8 @@ python plot_discoveryyear.python
 for file in *.svg
 do
 	echo "$file"
-	qlmanage -t -s 1706 -o . "$file"
-	convert "$file.png" -crop 1706x400+0+0 "$file.png"
+	qlmanage -t -s 500 -o . "$file"
+	convert "$file.png" -crop 500x1706+0+0 "$file.png"
 done	
 
 commit "automatic update: plots"
