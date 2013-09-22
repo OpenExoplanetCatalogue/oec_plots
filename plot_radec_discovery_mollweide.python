@@ -11,7 +11,7 @@ set output "plot_radec_discovery_mollweide.svg"
 set title "Positions of Extrasolar planet in Equatorial coordinate system"
 set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.15 front font ",8"
 
-# Mollweide projection (ref: http://astrojct.blogspot.jp/2012/01/plotting-grid-on-projected-gnuplot.html)
+# Mollweide projection in gnuplot (ref: http://astrojct.blogspot.jp/)
 bconv(b) = b*pi/180
 lconv(l) = (l<180) ? l*pi/180 : (l-360)*pi/180
 
