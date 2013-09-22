@@ -6,6 +6,7 @@ import subprocess, glob, os, datetime
 gnuplot = subprocess.Popen(['gnuplot', "-persist"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 gnuplot.stdin.write("""
 # gnuplot input
+reset
 set terminal svg size 800,600
 set output "plot_radec_discovery_mollweide.svg"
 set title "Positions of Extrasolar planet in Equatorial coordinate system"
@@ -34,9 +35,20 @@ plot [-pi:pi] \
 "-" using (mwx(bconv($2),lconv($1))):(mwy(bconv($2),lconv($1))) w p pt 7 lc 1 t "Directly imaged planets", \
 "-" using (mwx(bconv($2),lconv($1))):(mwy(bconv($2),lconv($1))) w p pt 7 lc 4 t "Microlensing planets", \
 "-" using (mwx($3/180*pi,$2/180*pi)):(mwy($3*pi/180,$2*pi/180)):1 with labels notit, \
-for [i=-2:2] mwx(pi*i/6,t),mwy(pi*i/6,t) w l lt 0 notit, \
-for [i=-3:3] mwx(t/2,pi*i/4),mwy(t/2,pi*i/4) w l lt 0 notit, \
-for [i=0:1] mwx(t/2,pi-2*pi*i),mwy(t/2,pi-2*pi*i) w l lt -1 lw 2 notit
+mwx(pi*(-2)/6.,t),mwy(pi*(-2)/6.,t) w l lt 0 notit, \
+mwx(pi*(-1)/6.,t),mwy(pi*(-1)/6.,t) w l lt 0 notit, \
+mwx(pi*( 0)/6.,t),mwy(pi*( 0)/6.,t) w l lt 0 notit, \
+mwx(pi*(+1)/6.,t),mwy(pi*(+1)/6.,t) w l lt 0 notit, \
+mwx(pi*(+2)/6.,t),mwy(pi*(+2)/6.,t) w l lt 0 notit, \
+mwx(t/2.,pi*(-3)/4.),mwy(t/2.,pi*(-3)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*(-2)/4.),mwy(t/2.,pi*(-2)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*(-1)/4.),mwy(t/2.,pi*(-1)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*( 0)/4.),mwy(t/2.,pi*( 0)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*(+1)/4.),mwy(t/2.,pi*(+1)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*(+2)/4.),mwy(t/2.,pi*(+2)/4.) w l lt 0 notit, \
+mwx(t/2.,pi*(+3)/4.),mwy(t/2.,pi*(+3)/4.) w l lt 0 notit, \
+mwx(t/2.,pi-2.*pi*0),mwy(t/2.,pi-2.*pi*0) w l lt -1 lw 2 notit, \
+mwx(t/2.,pi-2.*pi*1),mwy(t/2.,pi-2.*pi*1) w l lt -1 lw 2 notit
 """)
 
 # retrieve data
