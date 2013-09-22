@@ -7,10 +7,11 @@ gnuplot = subprocess.Popen(['gnuplot', "-persist"], stdin=subprocess.PIPE, stdou
 gnuplot.stdin.write("""
 # gnuplot input
 reset
-set terminal svg size 800,600
+set terminal svg 
+set key below 
 set output "plot_radec_discovery_mollweide.svg"
 set title "Positions of Extrasolar planet in Equatorial coordinate system"
-set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.15 front font ",8"
+set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.31,0.12 front font ",8"
 
 # Mollweide projection in gnuplot (ref: http://astrojct.blogspot.jp/)
 bconv(b) = b*pi/180
