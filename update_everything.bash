@@ -20,6 +20,7 @@ python plot_periodratio.python
 python plot_architecture.python
 python plot_binarysep_vs_planetsep.python
 python plot_discoveryyear.python
+python plot_radec_discovery_mollweide.python
 
 # Convert all svg vector images to rasterized png images.
 # This script is using qlmanage and convert. It only works on a mac, but it seems to produce the best quality renderings.
