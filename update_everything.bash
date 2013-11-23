@@ -33,4 +33,4 @@ done
 
 commit "automatic update: plots"
 
-#git push
+git push
