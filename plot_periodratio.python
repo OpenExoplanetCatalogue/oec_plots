@@ -74,7 +74,7 @@ set origin 0,0.
 set tmargin 0
 set xtics
 set bmargin 
-set yrange [0:55]
+set yrange [0:95]
 set xlabel "Period ratio"
 set ytics 10
 plot \
