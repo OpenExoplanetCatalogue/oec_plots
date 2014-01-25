@@ -13,9 +13,9 @@ set cblabel "Eccentricity"
 set logscale xy
 set xrange [0.001:80]
 set yrange [0.008:25]
-set label "Data taken from the Open Exoplanet Catalogue. Last updated on """+datetime.date.today().isoformat()+"""." at screen 0.19,0.15 front font ",8"
+set label "Data taken from the Open Exoplanet Catalogue. Last updated on {0}." at screen 0.19,0.15 front font ",8"
 plot "-" with point pt 7 lc palette notit
-""")
+""".format(datetime.date.today().isoformat()).encode('utf-8'))
 for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
 	system = ET.parse(open(filename, 'r'))
 	planets = system.findall(".//planet")
@@ -27,13 +27,15 @@ for filename in glob.glob("open_exoplanet_catalogue/systems/*.xml"):
 				eccentricity = float(planet.findtext("./eccentricity"))
 			except:
 				eccentricity = 0.
-			gnuplot.stdin.write("%e\t%e\t%e\n"%(mass, semimajoraxis, eccentricity))
+			gnuplot.stdin.write("{0:e}\t{1:e}\t{2:e}\n".format(
+				mass, semimajoraxis,
+				eccentricity).encode('utf-8'))
 		except:
 			# Mass or semimajoraxis not specified for this planet.
 			# One could do a more complicated check here and see if the period and the mass of the host star is given. 
 			pass
 
 
-gnuplot.stdin.write("\ne\n")
+gnuplot.stdin.write("\ne\n".encode('utf-8'))
 
 gnuplot.stdin.close()
