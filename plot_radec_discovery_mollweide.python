@@ -29,6 +29,7 @@ set parametric
 unset border
 unset xtics
 unset ytics
+set pointsize 0.75
 
 plot [-pi:pi] \
 "-" using (mwx(bconv($2),lconv($1))):(mwy(bconv($2),lconv($1))) w p pt 7 lc 2 t "Radial velocity planets", \
